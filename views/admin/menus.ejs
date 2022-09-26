@@ -141,7 +141,14 @@
     </div>
 
     <%- include("inc/footer") -%>
+    <!-- -plugin preview image tumbnail-->
+    <script src="/js/hcode-filereader.js"></script>
+    <!--form menus admin -->
     <script>
+
+      new HcodeFileReader("#modal-create [type=file]", "#modal-create img");
+      new HcodeFileReader("#modal-update [type=file]", "#modal-update img");
+
       let formCreate = document.querySelector("#modal-create form");
 
       formCreate.addEventListener('submit', e=>{
@@ -171,7 +178,7 @@
 
         switch (name){
           case 'photo':
-          
+          formUpdate.querySelector("img").src = '/'+data[name];
           break;
           default:        
             let input = formUpdate.querySelector(`[name=${name}]`);
