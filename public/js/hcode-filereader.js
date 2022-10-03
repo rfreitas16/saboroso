@@ -1,21 +1,19 @@
-class HcodeFileReader {
+class  HcodeFileReader {
 
     constructor(inputEl, imgEl){
 
         this.inputEl = inputEl;
         this.imgEl = imgEl;
 
-        //this.initInputEvent();
+        this.initInputEvent();
 
     }
 
     initInputEvent(){
-      
+
         document.querySelector(this.inputEl).addEventListener("change", e=>{
-            ///ERRO AQUI
-            console.log(e.target.files[o]);
-            this.reader(e.target.files[o]).then(result => {
-                console.log();
+
+            this.reader(e.target.files[0]).then(result => {
 
                 document.querySelector(this.imgEl).src = result;
             });
@@ -28,8 +26,8 @@ class HcodeFileReader {
         return new Promise((resolve, reject)=>{
 
         let reader = new FileReader();
-        reader.onload= function(){
-            console.log(reader);
+        reader.onload = function(){
+
             resolve(reader.result);
 
         }

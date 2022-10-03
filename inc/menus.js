@@ -3,47 +3,94 @@ let path = require('path');
 
 module.exports = {
 
-    getMenus(){
+    getMenus() {
 
-        return new Promise((resolve, reject) =>{
+        return new Promise((resolve, reject) => {
 
             conn.query(`
              SELECT * FROM tb_menus ORDER BY title
-             `, (err, results)=>{
+             `, (err, results) => {
 
-       if (err){
-        reject(err);
-            }
-             resolve(results);
-             });
+                if (err) {
+                    reject(err);
+                }
+                resolve(results);
+            });
         });
 
     },
 
     save(fields, files) {
 
-        return new Promise((resolve, reject)=>{
+        return new Promise((resolve, reject) => {
 
-                    //tratar nome da foto para ela aparecer no layout
-        fields.photo = `images/${path.parse(files.photo.filepath).base}`;
+            //tratar nome da foto para ela aparecer no layout
+            fields.photo = `images/${path.parse(files.photo.filepath).base}`;
 
-            conn.query(`
-                INSERT INTO tb_menus (title, description, price, photo)
-                VALUES(?, ?, ?, ?)
-            `, [
+            let query, queryPhoto = '', params = [
                 fields.title,
                 fields.description,
-                fields.price,
-                fields.photo
-            ], (err, results)=>{
+                fields.price
+            ];
+            //VERIFICAR SE FOI TROCADA A FOTO NO UPDATE
+            if (files.photo.filepath) {
+                queryPhoto = ', photo = ?';
+                params.push(fields.photo);
+
+            }
+            //UPDATE
+            if (parseInt(fields.id) > 0) {
+
+                params.push(fields.id);
+
+                query = `
+                    UPDATE tb_menus
+                    SET title = ?,
+                        description = ?,
+                        price = ?
+                        ${queryPhoto}
+                    WHERE id = ?
+                `;
+                //SALVANDO NOVO
+            } else {
+
+                if (!files.photo) {
+                    reject("Envie a foto do prato.");
+                }
+                query = `
+                INSERT INTO tb_menus (title, description, price, photo)
+                VALUES(?, ?, ?, ?)
+                `;
+
+            }
+            conn.query(query, params, (err, results) => {
 
                 if (err) {
                     reject(err);
-                }else{
+                } else {
                     resolve(results);
                 }
 
             });
         });
+    },
+
+    delete(id){
+        return new Promise((resolve, reject)=>{
+            conn.query(`
+            
+                DELETE FROM tb_menus WHERE id = ?
+            `,[
+                id
+            ], (err, results)=>{
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(results);
+                }
+            });
+
+        });
+
     }
 };
