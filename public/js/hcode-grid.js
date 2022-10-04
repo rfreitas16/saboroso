@@ -1,12 +1,38 @@
 class HcodeGrid {
 
     constructor(configs){
+        //SOBREESCREVER O LISTENER PARA FAZER ELE VIRAR PADRAO E PODER FAZER OUTRAS COISAS COM ELE
+        configs.listeners = Object.assign({
+            afterUpdateClick:(e)=>{
+                $('#modal-update').modal('show');
+            },
+            afterDeleteClick:(e)=>{
+                window.location.reload();
+            },
+            afterFormCreate: (e)=>{
+                window.location.reload();
+            },
+            afterFormUpdate: (e)=>{
+                window.location.reload();
+            },
+            afterFormCreateError: (e)=>{
+                alert('Nao foi possivel enviar o formulario.');
+            },
+            afterFormUpdateError: (e)=>{
+                alert('Nao foi possivel atualizar o formulario.');
+            },
+
+        }, configs.listeners);
 
         this.options = Object.assign({}, {
             formCreate: '#modal-create form',
             formUpdate: '#modal-update form',
             btnUpdate:'.btn-update',
-            btnDelete:'.btn-delete'
+            btnDelete:'.btn-delete',
+            onUpdateLoad: (form, name, data)=>{
+                let input = form.querySelector('[name='+name+']');
+                if(input)input.value = data[name];
+            }
         },configs);
         this.initForms();
         this.initButtons();
@@ -15,22 +41,38 @@ class HcodeGrid {
         this.formCreate = document.querySelector(this.options.formCreate);
 
         this.formCreate.save().then(json=>{
-          window.location.reload();
+            this.fireEvent('afterFormCreate');
 
         }).catch(err=>{
-
+            this.fireEvent('afterFormCreateError');
           console.log(err);
         });
 
         this.formUpdate = document.querySelector(this.options.formUpdate);
 
         this.formUpdate.save().then(json=>{
-            window.location.reload();
+            // window.location.reload();
+            this.fireEvent('afterFormUpdate');
 
         }).catch(err=>{
 
-          console.log(err);
+            this.fireEvent('afterFormUpdateError');
         });
+
+    }
+    //METODO PARA CHAMAR OS EVENTOS MAIS FACIL
+    fireEvent(name, args){
+
+       if(typeof this.options.listeners[name] === 'function') this.options.listeners[name].apply(this, args);
+    }
+    //METODO PARA PEGAR A LINHA 
+    getTrData(e){
+
+        let tr = e.composedPath().find(el => {
+        
+            return(el.tagName.toUpperCase() === 'TR');
+            });
+        return JSON.parse(tr.dataset.row);
 
     }
     initButtons(){
@@ -39,26 +81,36 @@ class HcodeGrid {
         [...document.querySelectorAll(this.options.btnUpdate)].forEach(btn =>{
 
             btn.addEventListener('click', e=>{
+                
+                this.fireEvent('beforeUpdateClick', [e]);
 
-                let tr = e.composedPath().find(el => {
+                let data = this.getTrData(e);
+
+        //         let tr = e.composedPath().find(el => {
         
-                    return(el.tagName.toUpperCase() === 'TR');
-        });
-            let data = JSON.parse(tr.dataset.row);
+        //             return(el.tagName.toUpperCase() === 'TR');
+        // });
+        //     let data = JSON.parse(tr.dataset.row);
             
             for(let name in data){
 
-                let input = this.formUpdate.querySelector(`[name=${name}]`);
+                this.options.onUpdateLoad(this.formUpdate, name, data);
 
-                switch (name){
-                    case 'date':
-                        if (input) input.value = moment(data[name]).format('YYYY-MM-DD');
-                    break;
-                    default:        
-                    if(input) input.value = data[name];
-                }
+                // let input = this.formUpdate.querySelector(`[name=${name}]`);
+
+                // switch (name){
+                //     case 'date':
+                //         if (input) input.value = moment(data[name]).format('YYYY-MM-DD');
+                //     break;
+                //     case 'photo':
+                //     formUpdate.querySelector("img").src = '/' + data[name];
+                //     break;
+                //     default:        
+                //     if(input) input.value = data[name];
+                // }
             }
-                    $('#modal-update').modal('show');
+ 
+                    this.fireEvent('afterUpdateClick', [e]);
              });
         });
 
@@ -66,12 +118,15 @@ class HcodeGrid {
         [...document.querySelectorAll(this.options.btnDelete)].forEach(btn =>{
 
             btn.addEventListener('click', e=>{
+
+                this.fireEvent('beforeUpdateClick');
     
-                let tr = e.composedPath().find(el => {
+            //     let tr = e.composedPath().find(el => {
             
-                return(el.tagName.toUpperCase() === 'TR');
-            });
-                let data = JSON.parse(tr.dataset.row);
+            //     return(el.tagName.toUpperCase() === 'TR');
+            // });
+            //     let data = JSON.parse(tr.dataset.row);
+            let data = this.getTrData(e);
                 for(let name in data){
                     if(confirm(eval('`' + this.options.deleteMsg + '`'))){
                         fetch(eval('`' + this.options.deleteUrl+ '`'),{
@@ -79,7 +134,9 @@ class HcodeGrid {
                         })
                         .then(response => response.json())
                         .then(json =>{
-                            window.location.reload();
+
+                            this.fireEvent('afterDeleteClick');
+
                         });
                     }
     

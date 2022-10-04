@@ -152,83 +152,102 @@
     <!-- -plugin preview image tumbnail-->
     <script src="/js/hcode-filereader.js"></script>
     <script src="/js/formsave.js"></script>
+    <script src="/js/hcode-grid.js"></script>
     <!--form menus admin -->
     <script>
 
       new HcodeFileReader("#modal-create [type=file]", "#modal-create img");
       new HcodeFileReader("#modal-update [type=file]", "#modal-update img");
 
-      let formCreate = document.querySelector("#modal-create form");
+      new HcodeGrid({
 
-      formCreate.save().then(json => {
-        window.location.reload();
+      deleteUrl:'/admin/menus/${data.id}',
+      deleteMsg:'Deseja realmente excluir o menu ${data.tittle}?',
+      onUpdateLoad: (formUpdate, name, data) => {
+          
+        let input = formUpdate.querySelector(`[name=${name}]`);
 
-      }).catch(err => {
-
-        console.log(err);
+          switch (name){
+              case 'photo':
+              formUpdate.querySelector("img").src = '/' + data[name];
+              break;
+              default:        
+              if(input) input.value = data[name];
+          }
+        }
       });
 
-      let formUpdate = document.querySelector("#modal-update form");
+      // let formCreate = document.querySelector("#modal-create form");
 
-      formUpdate.save().then(json => {
-          window.location.reload();
+      // formCreate.save().then(json => {
+      //   window.location.reload();
 
-      }).catch(err => {
+      // }).catch(err => {
 
-        console.log(err);
-      });
+      //   console.log(err);
+      // });
+
+      // let formUpdate = document.querySelector("#modal-update form");
+
+      // formUpdate.save().then(json => {
+      //     window.location.reload();
+
+      // }).catch(err => {
+
+      //   console.log(err);
+      // });
 
       //DELETE
-      [...document.querySelectorAll('.btn-delete')].forEach(btn => {
-        btn.addEventListener('click', e => {
+      // [...document.querySelectorAll('.btn-delete')].forEach(btn => {
+      //   btn.addEventListener('click', e => {
 
-          let tr = e.composedPath().find(el => {
+      //     let tr = e.composedPath().find(el => {
 
-            return (el.tagName.toUpperCase() === 'TR');
-          });
+      //       return (el.tagName.toUpperCase() === 'TR');
+      //     });
 
-          let data = JSON.parse(tr.dataset.row);
+      //     let data = JSON.parse(tr.dataset.row);
 
-          if (confirm(`Deseja realmente excluir esse menu ${data.title}?`)) {
+      //     if (confirm(`Deseja realmente excluir esse menu ${data.title}?`)) {
 
-            fetch(`/admin/menus/${data.id}`, {
-              method: 'DELETE'
-            })
-              .then(response => response.json())
-              .then(json => {
+      //       fetch(`/admin/menus/${data.id}`, {
+      //         method: 'DELETE'
+      //       })
+      //         .then(response => response.json())
+      //         .then(json => {
 
-                window.location.reload();
-              });
-            }
-          });
-      });
+      //           window.location.reload();
+      //         });
+      //       }
+      //     });
+      // });
       //UPDATE
 
-      [...document.querySelectorAll('.btn-update')].forEach(btn => {
+      // [...document.querySelectorAll('.btn-update')].forEach(btn => {
 
-        btn.addEventListener('click', e => {
-          //COMANDO PATH MUDAR PARA VER PROPRIEDADE COMPOSEDPATH
+      //   btn.addEventListener('click', e => {
+      //     //COMANDO PATH MUDAR PARA VER PROPRIEDADE COMPOSEDPATH
 
 
-          let tr = e.composedPath().find(el => {
+      //     let tr = e.composedPath().find(el => {
 
-          return (el.tagName.toUpperCase() === 'TR');
-          });
+      //     return (el.tagName.toUpperCase() === 'TR');
+      //     });
           
-          let data = JSON.parse(tr.dataset.row);
-          for (let name in data) {
+      //     let data = JSON.parse(tr.dataset.row);
+      //     for (let name in data) {
 
-            switch (name) {
-              case 'photo':
-                formUpdate.querySelector("img").src = '/' + data[name];
-                break;
-              default:
-                let input = formUpdate.querySelector(`[name=${name}]`);
-                if (input) input.value = data[name];
-            }
-          }
-          $('#modal-update').modal('show');
-        });
-      });
+      //       switch (name) {
+      //         case 'photo':
+      //           formUpdate.querySelector("img").src = '/' + data[name];
+      //           break;
+      //         default:
+      //           let input = formUpdate.querySelector(`[name=${name}]`);
+      //           if (input) input.value = data[name];
+      //       }
+      //     }
+      //     $('#modal-update').modal('show');
+      //   });
+      // });
 
     </script>
