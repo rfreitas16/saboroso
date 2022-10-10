@@ -103,7 +103,6 @@ router.delete('/emails/:id', function(req, res, next){
     res.send(err);
   });
 });
-
 //PAGINA DE ACESSO MENUS
 router.get('/menus', function (req, res, next) {
 
@@ -132,11 +131,19 @@ router.delete("/menus/:id", function(req, res, next) {
 });
 //PAGINA DE ACESSO RESERVAS
 router.get('/reservations', function (req, res, next) {
-  reservations.getReservations().then(data=>{
+
+  let start = (req.query.start) ? req.query.start :moment().subtract(1,"year").format("YYYY-MM-DD");
+  let end = (req.query.end) ? req.query.end :moment().format("YYYY-MM-DD");
+
+  reservations.getReservations(req).then(pag=>{
     res.render('admin/reservations', admin.getParams(req, {
-      date: {},
-      data,
-      moment
+      date: {
+        start,
+        end
+      },
+      data: pag.data,
+      moment,
+      links: pag.links
     }));
   });
 });
